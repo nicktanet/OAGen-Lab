@@ -39,8 +39,7 @@ if os.path.isdir(sys.argv[1]):
 else:
 	path = sys.argv[2]
 #art.path = path
-[nPath, rAddr, memList, mapList, listing, lstList,runtime]=art.main(path)
-
+[nPath, rAddr, memList, mapList, listing, lstList, runtime]=art.main(path)
 
 def getNFPath(name):
 	old =name[name.index("-")+1:name.index(".")]

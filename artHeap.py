@@ -34,8 +34,6 @@ class android_heap():
 	'''
 	
 	def readPointer(self, nPath, rAddr,index):
-		print('test5')
-		#breaks
 		k = open(nPath, 'rb')
 		k.seek(rAddr + index)
 		addr = hex(unpack_addr(k))
@@ -60,8 +58,6 @@ class android_heap():
 	def getHeap(self, nPath, rAddr, memList):
 		#index = art.getIndex('Runtime', 'heap_')
 		index = get_index('Runtime', 'heap_')
-		print('test4')
-		#breaks
 		heapAddr = self.readPointer(nPath, rAddr,index)
 		#print "Heap Offset "+ heapAddr
 		[heapPath, offset] = art.getOffset(heapAddr, memList)
@@ -98,8 +94,6 @@ class android_heap():
 		return [bitmap_size_, heapBegin_]
 	
 	def getRegion(self, nPath, rAddr, memList):
-		print('test3')
-		#breaks
 		[heapPath, offset] = self.getHeap(nPath, rAddr, memList)
 		regionSpace = self.readPointer(heapPath, offset,460)
 		#print "RegionSpace Offset "+ regionSpace

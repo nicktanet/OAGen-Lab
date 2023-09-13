@@ -202,8 +202,6 @@ def getGlobs(dir):
 	[nPath, rAddr, memList, mapList, listing,lstList,runtime]=art.main(dir)
 	th = tSelf.android_threads() # Global Thread Object
 	hp = heap.android_heap()
-	#breaks
-	print('test1')
 	[TLAB, NonTLAB, threads, bitmap_size_, heapBegin_] = art.helper(hp, th, nPath, rAddr, dir, memList)
 	return [nPath, rAddr, memList, mapList, listing, lstList, runtime, th, hp, bitmap_size_, heapBegin_]
 	
@@ -223,7 +221,7 @@ def usage():
 			dir = sys.argv[2]
 			#breaks
 			[nPath, rAddr, memList, mapList, listing, lstList, runtime, th, hp, bitmap_size_, heapBegin_] = getGlobs(dir)
-			print(heapDump)
+			heapDump=sys.argv[3]
 			roots =  getGCRoot(heapDump)
 			gFile = sys.argv[4]
 			depth=0
@@ -310,8 +308,8 @@ def usage():
 			
 if __name__ == "__main__":
 	print "Android Object Allocation Graph"
-	try:
-		usage()
-	except Exception, ex:
-		print ex
+	#try:
+	usage()
+	#except Exception, ex:
+	#print ex
 
