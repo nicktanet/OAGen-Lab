@@ -108,7 +108,7 @@ def findAddr(addr, lst):
 				start = value[0]
 				end =  value[1]
 				break
-	return [addr, start, key[:len(key)-1]]
+	return start, key #[addr, start, key[:len(key)-1]]
 	
 		
 def getRuntime(path): #Get runtime instance 
@@ -123,9 +123,10 @@ def getBss(lstList, path, instance):#get bss section and search for runtime inst
 	#to get loadBase Address = https://stackoverflow.com/questions/18296276/base-address-of-elf 
 	#readelf.py -l /Users/aishacct/Desktop/com.facebook.katana/memory_dump/libart.so
 	#LOAD           0x000000 0x0000b000 0x0000b000 0x6f3d38 0x6f3d38 R E 0x1000
-	address = int(address[0], 16) + (int(instance, 16) - 0xb000)  
+	process = subprocess.check_output('readelf --segments '+path+'/libart.so | grep "LOAD" -A1 | grep "R E" -B1', shell=True)
+	load_address = int(process.decode('utf-8').split()[2], 16)
+	address = int(address[0], 16) + (int(instance, 16) - load_address)  
 	return [hex(address)]
-	
 	
 def getBootART(lstList, path, fname):#get bss section and search for runtime instance
 	libRange = [i for i in lstList if (fname) in i] #find all insances of libart in mfetch.lst
@@ -133,6 +134,31 @@ def getBootART(lstList, path, fname):#get bss section and search for runtime ins
 	address =address[0].strip(':') 
 	return [address]
 	
+def getOffset(addr, alist):
+	start, key = findAddr(addr, alist)
+	if (start !=0):
+		offset = int(addr, 16) -  int(start, 16)
+		aPath = path+"/"+key
+	else:
+		offset = 0
+		aPath = None
+	return [aPath, offset]
+	
+def runtimeObj(address, memList):
+	[rPath,rAddr] = getOffset(address, memList)
+	#print rAddr, rPath
+	
+	#breaks here for no such file or directory error
+	#cannot find rpath
+	with open('/home/nicholastanet/Desktop/workingMemdumpsv9/angryBalls3D/mem_dump_tools/mem-2409.bin', 'rb') as g:  #replace with rPath
+		g.seek(rAddr)
+		runtime = hex(unpack_addr(g))
+		[nPath, nAddr] = getOffset(runtime, memList)
+		#print(nPath, nAddr)
+		g.close()
+		return [runtime, nPath, nAddr]
+
+'''
 def getOffset(a, alist):
 	[addr, start, key] = findAddr(a, alist)
 	if (start !=0):
@@ -145,15 +171,15 @@ def getOffset(a, alist):
 	
 def runtimeObj(address, memList):
 	[rPath,rAddr] = getOffset(address, memList)
+	print(rPath, rAddr)
 	with open(rPath, 'rb') as g:
 		g.seek(rAddr)
-		print(g)
 		runtime = hex(unpack_int(g.read(4))[0])
-		print(runtime)
+		#print(runtime)
 		[nPath, nAddr] = getOffset(runtime, memList)
-		print('nPath', nPath)
 		g.close()
-		return [runtime, nPath, nAddr]	
+		return [runtime, nPath, nAddr]
+'''	
 '''
 def getFhandle(f):
 	fhandle =  open(f, 'rb')
@@ -171,11 +197,13 @@ def main(projPath):
 		listing = getAddrRange(lstList)
 	else:
 		[listing, lstList] = parseVolFile(lstFile)# Its linux_dump_map dump from volatility
+	
 	[address] = getBss(lstList, path, instance)
-	[memList.update({key:value}) for key, value in listing.items() if key.startswith("mem")]	
-	[mapList.update({key:value}) for key, value in listing.items() if key.startswith("map")]
+	[memList.update({(key.strip(":")):value}) for key, value in listing.items() if key.startswith("mem")]	
+	[mapList.update({(key.strip(":")):value}) for key, value in listing.items() if key.startswith("map")]
+	
 	[runtime, nPath, rAddr] = runtimeObj(address, memList)
-	print(runtime, nPath, rAddr)
+	print("nick == "+runtime)
 	return[nPath, rAddr, memList, mapList,listing, lstList, runtime]
 
 def readString(dPath, dOff, size):
@@ -245,8 +273,6 @@ def getRefs(table_begin, segment_state):
 	return refs
 	
 def helper(hp, th, nPath, rAddr, path, memList):	
-	print('test2')
-	#breaks	
 	[regionAddr, num_regions_, bitmap_size_, heapBegin_] = hp.getRegion(nPath, rAddr, memList)	
 	#hp.getBitmap(bitmap, memList)
 	[TLAB, NonTLAB] = hp.regionHdr(regionAddr,num_regions_, memList)
