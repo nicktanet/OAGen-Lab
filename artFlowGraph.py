@@ -3,8 +3,8 @@
 @contact: aaligombe@towson.edu, apphackuno@gmail.com
 """
 import subprocess, sys, hashlib
-#from pygraphviz import *
-#import networkx as nx
+from pygraphviz import *
+import networkx as nx
 from utils import *
 import procFiles as proc
 
@@ -219,12 +219,12 @@ def usage():
 			import artJVM2 as jvm2
 			import utils as art_types
 			dir = sys.argv[2]
-			#breaks
 			[nPath, rAddr, memList, mapList, listing, lstList, runtime, th, hp, bitmap_size_, heapBegin_] = getGlobs(dir)
 			heapDump=sys.argv[3]
 			roots =  getGCRoot(heapDump)
 			gFile = sys.argv[4]
 			depth=0
+			#breaks
 			G=AGraph(strict=False,directed=True)
 			getGraph(G, gFile, roots)
 			print G.order()

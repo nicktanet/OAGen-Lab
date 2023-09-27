@@ -78,7 +78,26 @@ class android_heap():
 			return [TLAB_str, TLAB_top,TLAB_end, TLAB_ObjCount]
 	
 	def getBitmap(self, regionSPath, offset, memList):
-		mark_bitmap = self.readPointer(regionSPath, offset,164) #GetLiveBitmap for region space returns mark_bitmap
+		mark_bitmap_index = get_index('RegionSpace', 'mark_bitmap_')
+		mark_bitmap = self.readPointer(regionSPath, offset,mark_bitmap_index) #GetLiveBitmap for region space returns mark_bitmap
+		#print "live_bitmap " + mark_bitmap #GetLiveBitmap for region space returns mark_bitmap
+		[bitmapPath, offset] = art.getOffset(mark_bitmap, memList)
+		g = open(bitmapPath, 'rb')
+		g.seek(offset)
+		########## GET indexes in SpaceBitmap structure
+		memmap = hex(unpack_addr(g))
+		begin_ = hex(unpack_addr(g))
+		bitmap_size_ = unpack_addr(g)
+		#print "Bitmap size = "+ str(bitmap_size_)
+		heapBegin_ = hex(unpack_addr(g))
+		# name_index = get_index('SpaceBitmap', 'name_')
+
+		# name_ = art.getNames(hex(int(mark_bitmap, 16)+name_index), memList)
+		#print memmap, begin_, bitmap_size_, heapBegin_, name_
+		g.close()
+		return [bitmap_size_, heapBegin_]
+		
+		'''mark_bitmap = self.readPointer(regionSPath, offset,164) #GetLiveBitmap for region space returns mark_bitmap
 		#print "live_bitmap " + mark_bitmap #GetLiveBitmap for region space returns mark_bitmap
 		[bitmapPath, offset] = art.getOffset(mark_bitmap, memList)
 		g = open(bitmapPath, 'rb')
@@ -92,9 +111,32 @@ class android_heap():
 		#print memmap, begin_, bitmap_size_, heapBegin_, name_
 		g.close()
 		return [bitmap_size_, heapBegin_]
+	'''
 	
 	def getRegion(self, nPath, rAddr, memList):
 		[heapPath, offset] = self.getHeap(nPath, rAddr, memList)
+		region_space_index = get_index('Heap', 'region_space_')
+		regionSpace = self.readPointer(heapPath, offset,region_space_index)
+		#print "RegionSpace Offset "+ regionSpace
+		[regionSPath, offset] = art.getOffset(regionSpace, memList)
+		#live_bitmap = self.readPointer(regionSPath, offset,40) #Don't use always zero
+		#print "live_bitmap" + live_bitmap
+		#mark_bitmap = self.readPointer(regionSPath, offset,164) #GetLiveBitmap for region space returns mark_bitmap
+		#print "mark_bitmap" + mark_bitmap
+		num_regions_index = get_index('RegionSpace', 'num_regions_')
+		num_regions_ = self.readInt(regionSPath, offset,num_regions_index)	
+		# num_non_free_regions_ = self.readInt(regionSPath, offset,104)
+		#print "Number of regions = "+ str(num_non_free_regions_)
+		regions_index = get_index('RegionSpace', 'regions_')
+		regionAddr = self.readPointer(regionSPath, offset,regions_index)
+		#print "Number of Regions "+str(num_regions_)
+		#print "Number of Non Free Regions "+ str(num_non_free_regions_)
+		#print "Region Array Offset "+str(regionAddr)
+		#print "Region live_bitmap Offset "+str(mark_bitmap)
+		[bitmap_size_, heapBegin_] = self.getBitmap(regionSPath, offset, memList)
+		return [regionAddr, num_regions_, bitmap_size_, heapBegin_]		
+		
+		'''[heapPath, offset] = self.getHeap(nPath, rAddr, memList)
 		regionSpace = self.readPointer(heapPath, offset,460)
 		#print "RegionSpace Offset "+ regionSpace
 		[regionSPath, offset] = art.getOffset(regionSpace, memList)
@@ -112,7 +154,7 @@ class android_heap():
 		#print "Region live_bitmap Offset "+str(mark_bitmap)
 		[bitmap_size_, heapBegin_] = self.getBitmap(regionSPath, offset, memList)
 		return [regionAddr, num_regions_, bitmap_size_, heapBegin_]
-		
+		'''
 		
 	def hasAddress(self, obj, bitmap_size_, heapBegin_):
 		offset = obj - heapBegin_

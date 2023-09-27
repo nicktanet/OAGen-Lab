@@ -2,10 +2,10 @@
 @author: Aisha Ali-Gombe
 @contact: aaligombe@towson.edu, apphackuno@gmail.com
 """
-#!/usr/bin/python
+#!/usr/bin/python3.6
 import sys, collections
-#from pygraphviz import *
-#import networkx as nx
+from pygraphviz import *
+import networkx as nx
 #import numpy as np
 #from networkx.algorithms.connectivity import k_components
 from collections import OrderedDict
@@ -29,7 +29,7 @@ def getThreads(G): #ALl Threads
 	jThreadNodes = [node for node in G.iternodes() if "java.lang.Thread" == str(node.attr['label'])]
 	return jThreadNodes
 	
-def getObjects(G, obj): #Searcg of Objects
+def getObjects(G, obj): #Search of Objects
 	objNodes = [node for node in G.iternodes() if obj == str(node.attr['label'])]
 	return  objNodes
 

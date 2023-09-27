@@ -1,26 +1,20 @@
+# -*- coding: utf-8 -*-
 """
-@author: Aisha Ali-Gombe
-@contact: aaligombe@towson.edu, apphackuno@gmail.com
-"""
-#!/usr/bin/python
+    @credit: Aisha Ali-Gombe (aaligombe@towson.edu)
+    @contributors: Alexandre Blanchon, Arthur Belleville, Corentin Jeudy
 
+    Brief: Object Decoding Module
+"""
+
+#-- Import --#
 import artParse as art
 import artClass as cls
 import artField as fld
 import artDex as dx
 import artThread as threadlist
-import sys, binascii
-from collections import Counter 
+import sys
 from utils import *
-
-unpack_int = struct.Struct('<I').unpack
-unpack_dec = struct.Struct('<i').unpack
-unpack_b = struct.Struct('<B').unpack #Byte or Bool
-unpack_char = struct.Struct('<c').unpack
-unpack_short = struct.Struct('<H').unpack
-unpack_float = struct.Struct('<f').unpack
-unpack_long = struct.Struct('<Q').unpack
-unpack_double = struct.Struct('<d').unpack
+#-- End Import --#
 
 #Dump Libs artJVM.py path -g -data
 if os.path.isdir(sys.argv[1]): 
@@ -37,10 +31,10 @@ def getNFPath(name):
 	return name.replace(old, new)
 	
 def getJVMPointer(nPath, rAddr):
-	k = art.getFhandle(nPath)
+	k = open(nPath, 'rb')
 	index = get_index('Runtime', 'java_vm_')
 	k.seek(rAddr + index)
-	ret = hex(unpack_int(k.read(4))[0])
+	ret = hex(unpack_addr(k))
 	k.close()
 	return ret
 
@@ -49,31 +43,30 @@ def getJVM(jvm, memList):
 	return [vmPath, offset]
 
 def getIrefTable(vmPath, offset):
-	g = art.getFhandle(vmPath)
+	g = open(vmPath, 'rb')
 	g.seek(offset)#beginning of the global table
 	fsize = os.fstat(g.fileno()).st_size
 	off = g.tell()
 	if off >= fsize:
 		offset = off-fsize
 		vmPath = getNFPath(vmPath)
-		g = art.getFhandle(vmPath)
+		g = open(vmPath, 'rb')
 		g.seek(offset)
-	segment_state = unpack_dec(g.read(4))[0]
-	table_mem_map = hex(unpack_int(g.read(4))[0])
+	segment_state = unpack_addr(g)
+	table_mem_map = hex(unpack_addr(g))
 	#print "TableMap "+table_mem_map
-	table_begin = hex(unpack_int(g.read(4))[0])
+	table_begin = hex(unpack_addr(g))
 	#print "Irtentry "+table_begin
-	ref_kind = unpack_dec(g.read(4))[0]
+	ref_kind = unpack_addr(g)
 	#print  "ref_kind "+ str(ref_kind)
-	max_entries = unpack_dec(g.read(4))[0]
+	max_entries = unpack_addr(g)
 	#print  "max entries "+ str(max_entries)
-	num_holes = unpack_dec(g.read(4))[0]
+	num_holes = unpack_addr(g)
 	#print  "num_holes "+ str(num_holes)
-	last_known_state = unpack_dec(g.read(4))[0]
+	last_known_state = unpack_uint(g)
 	#print  "last_known_state "+ str(last_known_state)
-	resizable = hex(unpack_int(g.read(4))[0])
+	resizable = hex(unpack_uint(g))
 	#print  "resizable "+ resizable
-	g.close()
 	return [segment_state, table_begin] 
 
 
@@ -89,8 +82,9 @@ def getWeakGlob(vmPath, offset):
 	
 def getOwner(monitor):
 	[g, objOff] = art.fromPointer(monitor, mapList)
-	g.seek(objOff+68)
-	ret = hex(unpack_int(g.read(4))[0])
+	index = get_index('Monitor', 'obj_')
+	g.seek(objOff + index)
+	ret = hex(unpack_uint(g))
 	g.close()
 	return ret
 
@@ -109,9 +103,9 @@ def printLRefs (refs):
 		
 def getPointer(addr, off):
 	[tpath, offset] = art.getOffset(addr, memList)	
-	g = art.getFhandle(tpath)
+	g = open(tpath, 'rb')
 	g.seek(offset+off)
-	newAddr = hex(unpack_int(g.read(4))[0])
+	newAddr = hex(unpack_addr(g))
 	g.close()
 	return newAddr
 
@@ -126,16 +120,6 @@ def getSelf(jni):
 def getLocals(tpath,offset):	
 	localsOff = offset+16
 	return getIrefTable(tpath, localsOff)
-
-def getLocal(key, tName, ref):
-	jni = getJNI(key)
-	[tpath, offset] = art.getOffset(jni, memList)
-	[segment_state, table_begin]=getLocals(tpath,offset)
-	refs = art.getRefs(table_begin, segment_state)
-	if ref in refs:
-		return tName		
-	else:
-		return None
 		
 def mainRefs(ref):
 	segment_state=0
@@ -153,91 +137,57 @@ def mainRefs(ref):
 #Dump Libs artJVM.py path -d offset -o file	
 def getLibsOffset(vmPath, offset):
 	index = get_index('JavaVMExt', 'libraries_')
-	g = art.getFhandle(vmPath)
+	g = open(vmPath, 'rb')
 	g.seek(offset+index)
-	libraries_ = hex(unpack_int(g.read(4))[0])
+	libraries_ = hex(unpack_addr(g))
 	g.close()
-	return libraries_
-	
-def searchRef(ref):
-	refs = mainRefs("Globals")
-	if ref in refs:
-		print ref +" is a Global Reference"
-	else:
-		refs = mainRefs("NonGlobals")
-		if ref in refs:
-			print ref +" is a Weak Global Reference"
-		else:
-			tName = searchRefLocal(ref)
-			if tName:
-				print ref +" is a Local Global Reference in thread - "+tName
-			else:
-				print "No reference for "+ref
-		#print '\n'.join(refs)
-def searchRefLocal(ref):
-		[threads, opeer] = threadlist.__main__()
-		for key, value in threads.items():
-			tName = getLocal(key, value[1], ref)
-			if tName:
-				return tName
-		return None
-			
+	return libraries_			
 		
 def getObjectArray(length_, addr, arrData):
 	while (length_ >0):
-		arrData.append(hex(unpack_int(addr.read(4))[0]))
-		length_ =length_-1
+		arrData.append(hex(unpack_addr(addr)))
 	return arrData	
 	
 def getCharArray(length_, addr, arrData):
 	length_= length_*2
 	while (length_ >0):
-		arrData.append(struct.unpack("<c", addr.read(1))[0])
+		arrData.append(unpack_char(addr))
 		length_ =length_-1
 	return arrData		
 def getIntArray(length_, addr, arrData):
 	while (length_ >0):
-		arrData.append(unpack_dec(addr.read(4))[0])
+		arrData.append(unpack_int(addr))
 		length_ =length_-1
 	return arrData
 def getFloatArray(length_, addr, arrData):
 	while (length_ >0):
-		arrData.append(struct.unpack("<f", addr.read(4))[0])
+		arrData.append(unpack_float(addr))
 		length_ =length_-1
 	return arrData
 def getShortArray(length_, addr, arrData):
 	while (length_ >0):
-		arrData.append(struct.unpack("<H", addr.read(2))[0])
+		arrData.append(unpack_ushort(addr))
 		length_ =length_-1
 	return arrData
 def getBArray(length_, addr, arrData):#Byte and Bool
 	while (length_ >0):
-		arrData.append(struct.unpack("<B", addr.read(1))[0])
+		arrData.append(unpack_b(addr))
 		length_ =length_-1
 	return arrData	
 def getLongArray(length_, addr, arrData):
 	while (length_ >0):
-		arrData.append(struct.unpack("<Q", addr.read(8))[0])
+		arrData.append(unpack_ulong(addr))
 		length_ =length_-1
 	return arrData	
 def getDoubleArray(length_, addr, arrData):
 	while (length_ >0):
-		arrData.append(struct.unpack("<d", addr.read(8))[0])
+		arrData.append(unpack_double(addr))
 		length_ =length_-1
 	return arrData			
 	
 def getStringArray(arrSize, i, arrData): #Needs to fix
 	while(arrSize >0):
-		strPointer = hex(unpack_int(i.read(4))[0])
-		[j, strOff] = art.fromPointer(strPointer, mapList)
-		if j:
-			arrData.append(art.getStringClass(strOff, j))
-		arrSize= arrSize-1
-	return arrData
-	
-def getStringArray(arrSize, i, arrData): #Needs to fix
-	while(arrSize >0):
-		strPointer = hex(unpack_int(i.read(4))[0])
+		strPointer = hex(unpack_addr(i))
 		if strPointer!="0x0":
 			[j, strOff] = art.fromPointer(strPointer, mapList)
 			if j:
@@ -279,9 +229,8 @@ def getSuperClass(super_class_,fDict, ret):
 	superC = True
 	while superC:
 		[sPath, sOffset] = art.getOffset(super_class_, mapList)
-		sAddr = art.getFhandle(sPath)
+		sAddr = open(sPath, 'rb')
 		[name, classFlag, primType, ifields_,methods_, sfields_, dexCache, objSize, refSize, super_class_] =  cls.getClassMembers(super_class_, sAddr, sOffset, mapList)
-		sAddr.close()
 		if (name =="java.lang.Object" or super_class_ == None):
 			superC = False
 		elif ifields_!="0x0":
@@ -301,7 +250,7 @@ def getClsObj(ref, refFile, refOff, fDict, addr, off):
 	if(name and name.startswith('[')):
 		arrData=[]
 		addr.seek(off+8)
-		length_ = unpack_dec(addr.read(4))[0]
+		length_ = unpack_int(addr)
 		ret.append("length "+str(length_))
 		[arrData, length_] = checkArray(name,length_, addr, arrData)
 		objSize = 8+4+length_
@@ -311,7 +260,7 @@ def getClsObj(ref, refFile, refOff, fDict, addr, off):
 	elif(name == "java.lang.String"):#&& Its a string
 		prettyName=''
 		addr.seek(off+8)
-		count = unpack_dec(addr.read(4))[0]
+		count = unpack_int(addr)
 		l = count >> 1
 		if l >65536:
 			l=0
@@ -349,11 +298,27 @@ def getClsObj(ref, refFile, refOff, fDict, addr, off):
 				[ret.append(i) for i in r]
 			else:
 				ret.append("No Instance Fields for the object")
+		'''if sfields_!="0x0":
+			sDict=OrderedDict()
+			fields = fld.getFields(dexCache, sfields_, mapList)
+			for key, values in fields.items():
+				fieldIdx = values[2]
+				cl,type ,name = dx.getMeta(dexCache,fieldIdx,mapList, memList)			
+				#print "FieldName - "+name+ " - "+type+" offset "+str(values[3])
+				sDict[values[3]] = [name,type]
+			if sDict:
+				fld.getValue(sDict, addr, off)
+		else:
+			print "No Static Fields for the object"'''
 	else:
 		ret.append("Object is either null or cannot be dereferenced")
 		objSize=8	
 	return objSize, ret
 			#print fld.getValue(ref, iIndex+values[3], mapList, type)
+	'''if sfields_!="0x0":
+			print getFields(sfields_)
+		if methods_!="0x0":
+			print getMethods(methods_)'''
 			
 def dumpRefs(ref, addr, off):
 	ret=[]
@@ -379,8 +344,18 @@ def dumpRefs(ref, addr, off):
 		ret.append( "++++++++++++++++++++++++++++++++++++++++++++")
 		ret.append( "Reference Class is String")
 		prettyName=''
+		'''addr.seek(off+8)
+		count = unpack_dec(addr.read(4))[0]
+		l = count >> 1
+		if (l >0):
+			addr.seek(addr.tell()+4)
+			prettyName = addr.read(l)
+			print prettyName
+		else:
+			print "Null String"
+		objSize = 8+8+l #8 = object inheritance, 8=count+hash, l = length of string'''
 		refFile.seek(refOff+8)
-		count = unpack_dec(refFile.read(4))[0]
+		count = unpack_int(refFile)
 		l = count >> 1
 		if l >65536:
 			l=0
@@ -396,12 +371,12 @@ def dumpRefs(ref, addr, off):
 	elif (name and name.startswith('[')):
 		#count number of [ and loop through
 		ret.append( "++++++++++++++++++++++++++++++++++++++++++++")
-		#print "Reference Class is an "+ name +" Array "
+		print "Reference Class is an "+ name +" Array "
 		arrData=[]
 		#[i, arrayObjOff] = art.fromPointer(ref, mapList)
 		#addr.seek(off+8)
 		refFile.seek(refOff+8)
-		arrSize = unpack_dec(refFile.read(4))[0]
+		arrSize = unpack_int(refFile)
 		ret.append( "Array size is "+str(arrSize))
 		arrData = checkArray(name,arrSize, refFile, arrData)
 		if arrData:
@@ -426,3 +401,58 @@ def dumpRefs(ref, addr, off):
 		ret.append( "\n")
 	refFile.close()
 	return objSize, ret
+	#get class, monitor
+		#If primitive render data
+		#If Array render
+		#Class, get fields and methods and print			
+			
+	
+#if len(sys.argv)==2:
+#	refs = mainRefs("Globals")	
+#	printRefs (refs)
+#elif (sys.argv[2]=="-d"):
+#	ref = sys.argv[3]
+#	searchRef(ref)
+#	objSize = dumpRefs(ref)
+	
+	
+		
+		
+		#cls.getClsFlag(klass, mapList) +" "+ cls.getType(klass, mapList)
+		#if ('java.lang.Class' in name):
+		#	[dexCache, classFlag, ifields_,methods_, sfields_, name] = getClassObj(ref, mapList)
+		#	print "jClass "+ name
+		#	print ifields_ +" "+methods_+" "+sfields_
+		#	if ifields_!="0x0":
+		#		print getFields(dexCache, ifields_)
+			#if sfields_!="0x0":
+			#	print getFields(sfields_)
+			#if methods_!="0x0":
+			#	print getMethods(methods_)
+		#elif ('java.lang.String' in name):
+		#	stringClassOff= refOff+8
+		#	print "jString "
+			#getStringClass(stringClassOff, refFile)
+		#else:
+		#	print "jObect "
+		#for i in refs:
+			#[klass, monitor]=getOKlass(i)
+			#name = resolveName(klass)
+			#out[i] = name
+			#print i, name
+	#return out
+			#print i, name
+			#if ('java.lang.Class' in name):
+				#print "Resolved Class Name is == "+getClassClass(i)
+			#print monitor
+#	if ('java.lang.String' in name):
+#		[fHandle, strOff] = fromPointer(i, mapList)
+#		print i
+#		print "The data in String == "+getStringClass(strOff, fHandle)
+	
+	
+#print "Reference \t JType"
+#for key, value in out.items():
+#	print key+"\t"+value
+
+#print getLibsOffset(vmPath, offset)
