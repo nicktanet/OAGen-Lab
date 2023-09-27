@@ -150,7 +150,7 @@ def runtimeObj(address, memList):
 	
 	#breaks here for no such file or directory error
 	#cannot find rpath
-	with open('/home/nicholastanet/Desktop/workingMemdumpsv9/angryBalls3D/mem_dump_tools/mem-2409.bin', 'rb') as g:  #replace with rPath
+	with open(rPath, 'rb') as g:  #replace with rPath
 		g.seek(rAddr)
 		runtime = hex(unpack_addr(g))
 		[nPath, nAddr] = getOffset(runtime, memList)
@@ -203,7 +203,6 @@ def main(projPath):
 	[mapList.update({(key.strip(":")):value}) for key, value in listing.items() if key.startswith("map")]
 	
 	[runtime, nPath, rAddr] = runtimeObj(address, memList)
-	print("nick == "+runtime)
 	return[nPath, rAddr, memList, mapList,listing, lstList, runtime]
 
 def readString(dPath, dOff, size):
