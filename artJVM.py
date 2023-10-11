@@ -135,8 +135,8 @@ def findThreadGCRoot (refs, lstList, mapList):
 
 
 def printLRefs (refs):
-	print "There are "+str(len(refs)-1)+" local references in the thread "+str(refs[-1])
-	print '\n'.join(refs[:-1])
+	print ("There are "+str(len(refs)-1)+" local references in the thread "+str(refs[-1]))
+	print ('\n'.join(refs[:-1]))
 		
 		
 def getPointer(addr, off):
@@ -413,11 +413,11 @@ def dumpRefs(ref, addr, address, off):
 		objSize=8
 	if (name):
 		if ('?' in name):
-			print "Address "+address +" "+ monitor +" "+str(objSize)
+			print ("Address "+address +" "+ monitor +" "+str(objSize))
 		else:
-			print "Address "+address +" "+ monitor +" "+name + " "+str(objSize)
+			print ("Address "+address +" "+ monitor +" "+name + " "+str(objSize))
 	else:
-		print "Address "+address +" "+ monitor +" "+str(objSize)
+		print ("Address "+address +" "+ monitor +" "+str(objSize))
 	refFile.close()
 	return objSize
 	#get class, monitor

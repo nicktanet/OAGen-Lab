@@ -94,11 +94,11 @@ def printRefs (refs):
 	if refs:
 		for ref in refs:
 			[klass, monitor, refFile, refOff]=cls.getOKlass(ref, mapList)		
-			print ref +" "+ cls.resolveName(klass, mapList) + " "+ monitor
+			print (ref +" "+ cls.resolveName(klass, mapList) + " "+ monitor)
 
 def printLRefs (refs):
-	print "There are "+str(len(refs)-1)+" local references in the thread "+str(refs[-1])
-	print '\n'.join(refs[:-1])
+	print ("There are "+str(len(refs)-1)+" local references in the thread "+str(refs[-1]))
+	print ('\n'.join(refs[:-1]))
 		
 		
 def getPointer(addr, off):
@@ -367,11 +367,11 @@ def dumpRefs(ref, addr, off):
 			ret.append( "Null String")
 		refFile.close()
 		objSize = 8 #8 = object inheritance, 8=count+hash, l = length of string
-		print "\n"
+		print ("\n")
 	elif (name and name.startswith('[')):
 		#count number of [ and loop through
 		ret.append( "++++++++++++++++++++++++++++++++++++++++++++")
-		print "Reference Class is an "+ name +" Array "
+		print ("Reference Class is an "+ name +" Array ")
 		arrData=[]
 		#[i, arrayObjOff] = art.fromPointer(ref, mapList)
 		#addr.seek(off+8)

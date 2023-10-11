@@ -93,7 +93,7 @@ def getValueClass(fDict, tlab, offset):
 		if 	(name=="classSize"):
 			classSize = addr
 		if (name=="status") and not isResolved(int(addr)):
-			print "This class cannot be resolved it is either retired or error"
+			print ("This class cannot be resolved it is either retired or error")
 		if (name=="dexCache"):
 			dexCache =addr
 	return [buf, classSize, sField, dexCache]

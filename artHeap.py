@@ -219,13 +219,13 @@ class android_heap():
 				g.seek(regBegin+40)
 			count = count+1	
 		g.close()
-		print "NonTlab Total "+str(oCount)
+		print ("NonTlab Total "+str(oCount))
 		return [TLAB, NonTLAB]
 		
 	def get_open_fds(self):
 		pid = os.getpid()
 		procs = subprocess.check_output([ "lsof", '-w', '-Ff', "-p", str(pid)]).split('\n')
-		print len(procs)
+		print (len(procs))
     	#nprocs = len(filter(lambda s: s and s[ 0 ] == 'f' and s[1: ].isdigit(), procs.split( '\n' ) ))
     	#return nprocs
     	

@@ -81,9 +81,9 @@ def recurseDecode(G, node):
 					#node.attr['label'] = "java.lang.Class"
 					#node.attr['data']="Class Definition"
 		#print node.attr['id'] +" "+node.attr['label']
-	except Exception, e:
+	except Exception as e:
 		tb = sys.exc_info()[2]
-		print tb.tb_lineno, e, node.attr['id']
+		print (tb.tb_lineno, e, node.attr['id'])
 			
 		
 
@@ -167,20 +167,20 @@ def decodeObject(bitmap_size_, heapBegin_, node):
 	
 
 def help():
-	print "Usage: pypy artFlowGraph Command [File/Path] [Options]\n" 
-	print "Available Commands:\n"
-	print "Graph:   A utility for creating an object allocation graph from a memory image and a heapdump"
-	print "\t\tpypy artFlowGraph Graph Path-to-ImageFiles Path-to-HeapDump Graph-OutFile.dot"
-	print "Plot:    Plot the generated OAG"
-	print "\t\tpypy artFlowGraph Plot Graph-InFile Plot-File.png"
-	print "Strings: A utility for simple string object search"
-	print "\t\tpypy artFlowGraph Strings Graph-InFile "
-	print "\t\tpypy artFlowGraph Strings Graph-InFile seachString"
-	print "Context: A utility that recursively find the broader context for a target object with depth and width"
-	print "\t\tpypy artFlowGraph Context Graph-InFile TargetAddress -d depth"
-	print "\t\tpypy artFlowGraph Context Graph-InFile TargetAddress -d depth Plot"
-	print "\t\tpypy artFlowGraph Context Graph-InFile TargetAddress -w width"
-	print "\t\tpypy artFlowGraph Context Graph-InFile TargetAddress -w width Plot"
+	print ("Usage: pypy artFlowGraph Command [File/Path] [Options]\n") 
+	print ("Available Commands:\n")
+	print ("Graph:   A utility for creating an object allocation graph from a memory image and a heapdump")
+	print ("\t\tpypy artFlowGraph Graph Path-to-ImageFiles Path-to-HeapDump Graph-OutFile.dot")
+	print ("Plot:    Plot the generated OAG")
+	print ("\t\tpypy artFlowGraph Plot Graph-InFile Plot-File.png")
+	print ("Strings: A utility for simple string object search")
+	print ("\t\tpypy artFlowGraph Strings Graph-InFile ")
+	print ("\t\tpypy artFlowGraph Strings Graph-InFile seachString")
+	print ("Context: A utility that recursively find the broader context for a target object with depth and width")
+	print ("\t\tpypy artFlowGraph Context Graph-InFile TargetAddress -d depth")
+	print ("\t\tpypy artFlowGraph Context Graph-InFile TargetAddress -d depth Plot")
+	print ("\t\tpypy artFlowGraph Context Graph-InFile TargetAddress -w width")
+	print ("\t\tpypy artFlowGraph Context Graph-InFile TargetAddress -w width Plot")
 	
 			
 
@@ -210,7 +210,7 @@ def usage():
 	if len(sys.argv) == 2 and sys.argv[1]=="-h":
 		help()
 	elif len(sys.argv) < 3:
-		print "Insufficient arguments. Try -h for usage and command options"
+		print ("Insufficient arguments. Try -h for usage and command options")
 	else:#dir = sys.argv[1] 
 		import os.path
 		if (sys.argv[1]=="Graph"):#Generate Object Allocation graph from process memory dump given the starting point
@@ -227,8 +227,8 @@ def usage():
 			#breaks
 			G=AGraph(strict=False,directed=True)
 			getGraph(G, gFile, roots)
-			print G.order()
-			print len(G.edges())
+			print (G.order())
+			print (len(G.edges()))
 		elif (sys.argv[1]=="Strings" and os.path.isfile(sys.argv[2])):
 			gFile = sys.argv[2]
 			G=AGraph(gFile, strict=False,directed=False)
@@ -236,7 +236,7 @@ def usage():
 			if len(sys.argv) >3:
 				strSearch = sys.argv[3]
 				strings = [i for i in strings if strSearch in i]
-			print "\n".join(strings) # Start from a string  then plot the subgraph of the top predessaor to target
+			print ("\n".join(strings)) # Start from a string  then plot the subgraph of the top predessaor to target
 		elif(sys.argv[1]=="Object" and os.path.isfile(sys.argv[2])):
 			gFile = sys.argv[2]
 			G=AGraph(gFile, strict=False,directed=False)
@@ -282,7 +282,7 @@ def usage():
 				depth = int(sys.argv[5])
 				nodeList = proc.getContext(G, target, depth)
 			elif sys.argv[4]=="-w":
-				print "here"
+				print ("here")
 				width = int(sys.argv[5])
 				allNodes = G.nodes()
 				if target in allNodes:
@@ -294,20 +294,20 @@ def usage():
 						nodeList.append(allNodes[i])
 					#proc.printNodes(G, nodeList)
 				else:
-					print "Target not Graph"
+					print ("Target not Graph")
 			else:
-				print "Deafult to depth of 10"
+				print ("Deafult to depth of 10")
 				nodeList = proc.getContext(G, target, 10)
 			if len(sys.argv) >6 and sys.argv[6] == "Plot":
 				proc.pltSub(G, sorted(nodeList))
 			else:
 				proc.printNodes(G, nodeList)
 		else:
-			print "Invalid Option, Try -h for usage and command options"
+			print ("Invalid Option, Try -h for usage and command options")
 		print('end')
 			
 if __name__ == "__main__":
-	print "Android Object Allocation Graph"
+	print ("Android Object Allocation Graph")
 	#try:
 	usage()
 	#except Exception, ex:
