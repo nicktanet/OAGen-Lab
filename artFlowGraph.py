@@ -8,6 +8,8 @@ import networkx as nx
 from utils import *
 import procFiles as proc
 
+#import os
+#os.environ["PATH"] += os.pathsep + '/home/nicholastanet/.local/lib/python2.7/site-packages/graphviz'
 # mkdir /usr/local/Frameworks
 # graphviz mac installation - brew install graphviz
 # pygraphiz mac installation - pip install  --install-option="--include-path=/usr/local/Cellar/graphviz/2.42.3/include/" --install-option="--library-path=/usr/local/Cellar/graphviz/2.42.3/lib/" pygraphviz
@@ -47,7 +49,7 @@ def recurseDecode(G, node):
 				#[G.add_edge(G.nodes()[index], x) for x in arr]
 				node.attr['data']=' '.join(arr)
 				node.attr['label']= "Object Array"
-			#print decoded
+			#print decodedpygraphviz
 		else:
 			if not 'Size ' in decoded:
 				node.attr['data'] ='Error'
@@ -224,7 +226,6 @@ def usage():
 			roots =  getGCRoot(heapDump)
 			gFile = sys.argv[4]
 			depth=0
-			#breaks
 			G=AGraph(strict=False,directed=True)
 			getGraph(G, gFile, roots)
 			print (G.order())
