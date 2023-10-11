@@ -40,7 +40,7 @@ def findPaths(G, Gnx, start, finish):
 	finPath=[]
 	sPath = nx.shortest_path(Gnx,start,finish)
 	[finPath.append(G.get_node(s).attr['label']+ " "+s) for s in sPath]
-	print "\n".join(finPath)
+	print ("\n".join(finPath))
 	return sPath
 	
 def findTargetStr(G, targetStr): 
@@ -78,7 +78,7 @@ def pltSub(G, nodeList):
 	H = G.subgraph(nodeList)
 	H.layout(prog='dot')
 	H.draw(pFile)
-	print "Plot in "+os.getcwd()+"/"+pFile
+	print ("Plot in "+os.getcwd()+"/"+pFile)
 	
 def fromRoot(G, Gnx, goal):
 	start = getRoot(G)
@@ -95,13 +95,13 @@ def getComponents(G):
 	objList =["android.app.ActivityThread$ActivityClientRecord", "android.app.ActivityThread$ProviderClientRecord", "android.app.LoadedApk$ReceiverDispatcher", "android.app.LoadedApk$ServiceDispatcher"]
 	for obj in objList:
 		objs = getObjects(G, obj)
-		print obj +" "+str(len(objs))
+		print (obj +" "+str(len(objs)))
 		[compNodes.append(o) for o in objs]
 	return compNodes
 
 def printNodes(G, nodeList):
 	for node in nodeList:
-		print G.get_node(node).attr['label']+" "+node
+		print (G.get_node(node).attr['label']+" "+node)
 			
 def getContext(G, target, depth):
 	nodeList = findTarget(G, target, depth)
@@ -123,10 +123,10 @@ def traversePath(nodesList, target):
 			finish = G.get_node(target)
 			sPath = nx.shortest_path(Gnx, start, finish)
 			[finPath.append(G.get_node(s).attr['data']) for s in sPath]
-			print objNode+"-----------"
-			print "\n".join(finPath)
+			print (objNode+"-----------")
+			print ("\n".join(finPath))
 		except:
-			print "No path between "+ objNode +" and "+ target
+			print ("No path between "+ objNode +" and "+ target)
 
 def lrc(G, Gnx):
 	cent=[]

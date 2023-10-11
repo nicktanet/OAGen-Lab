@@ -107,10 +107,10 @@ class android_threads():
 	def fromMon(self, mAddr, mapList, memList):
 		tList=[]
 		[mPath, offset] = art.getOffset(mAddr, mapList)	
-		print mPath, offset
+		print (mPath, offset)
 		with open(mPath, 'rb') as g:
 			t = get_index('Monitor', 'owner')
-			print t
+			print (t)
 			tList.append(t)
 			threads = self.getThreads(tList, memList)
 			mPath.close()
