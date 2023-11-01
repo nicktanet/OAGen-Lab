@@ -12,9 +12,7 @@ ARCH = 32 # 32 or 64
 #--End Config parameters --#
 
 #-- Import --#
-import os
-import subprocess
-import struct
+import os, subprocess, struct, binascii
 from collections import OrderedDict
 #-- End Import --#
 

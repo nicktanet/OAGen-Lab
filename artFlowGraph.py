@@ -7,6 +7,8 @@ from pygraphviz import *
 import networkx as nx
 from utils import *
 import procFiles as proc
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 #import os
 #os.environ["PATH"] += os.pathsep + '/home/nicholastanet/.local/lib/python2.7/site-packages/graphviz'
@@ -16,9 +18,9 @@ import procFiles as proc
 # graphviz mac installation - brew install networkx
 
 def recurseDecode(G, node):
-	try:
+	#try:
 		rootNode = node.attr['id']	
-		decoded = str(decodeObject(bitmap_size_, heapBegin_, rootNode)).encode('UTF8')[1:-1]
+		decoded = str(decodeObject(bitmap_size_, heapBegin_, rootNode)).decode('utf8').strip()[1:-1]
 		if 'The data for java.lang.String' in decoded:
 			slice = filter(lambda x: x != "", decoded.split("The data for java.lang.String is"))[1]
 			splitted = [repr(i) for i in slice.split()]
@@ -83,9 +85,9 @@ def recurseDecode(G, node):
 					#node.attr['label'] = "java.lang.Class"
 					#node.attr['data']="Class Definition"
 		#print node.attr['id'] +" "+node.attr['label']
-	except Exception as e:
-		tb = sys.exc_info()[2]
-		print (tb.tb_lineno, e, node.attr['id'])
+	#except Exception as e:
+		#tb = sys.exc_info()[2]
+		#print (tb.tb_lineno, e, node.attr['id'])
 			
 		
 
@@ -165,7 +167,7 @@ def getGraph(G, fName, roots):
 	
 def decodeObject(bitmap_size_, heapBegin_, node):
 	ret = hp.getObject(node, jvm2, lstList, mapList, bitmap_size_, heapBegin_)
-	return "@ Address "+node+"\n"+ '\n'.join(ret)
+	return "@ Address " +"\n" + node + '\n'.join(ret)
 	
 
 def help():
@@ -194,6 +196,7 @@ def getGCRoot(heapDump):
 	gcroot =[]
 	for line in g.readlines():
 		if line.startswith('Address'):
+			print (line)
 			gcroot.append(str(line.split(' ')[1]).rstrip("L"))
 	g.close()
 	return gcroot
@@ -224,6 +227,7 @@ def usage():
 			[nPath, rAddr, memList, mapList, listing, lstList, runtime, th, hp, bitmap_size_, heapBegin_] = getGlobs(dir)
 			heapDump=sys.argv[3]
 			roots =  getGCRoot(heapDump)
+			print (roots)
 			gFile = sys.argv[4]
 			depth=0
 			G=AGraph(strict=False,directed=True)

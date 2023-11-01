@@ -6,7 +6,6 @@
 
 
 
-import binascii
 #import art_types as types
 from utils import *
 import re
@@ -112,9 +111,9 @@ def findAddr(addr, lst):
 	
 		
 def getRuntime(path): #Get runtime instance 
-	libart = [filename for filename in os.listdir(path) if filename.startswith("libart.so")][0]
-	process = subprocess.check_output("nm -aS "+path+"/"+libart+" | grep \"_ZN3art7Runtime9instance_E\"", shell = True)
-	return process.split()[0] 
+    libart = [filename for filename in os.listdir(path) if filename.startswith("libart.so")][0]
+    process = subprocess.check_output("nm -aS "+path+"/"+libart+" | grep \"_ZN3art7Runtime9instance_E\"", shell = True)
+    return process.split()[0] 
 	
 def getBss(lstList, path, instance):#get bss section and search for runtime instance
 	libRange = [i for i in lstList if ("/libart.so") in i] #find all insances of libart in mfetch.lst
@@ -197,11 +196,9 @@ def main(projPath):
 		listing = getAddrRange(lstList)
 	else:
 		[listing, lstList] = parseVolFile(lstFile)# Its linux_dump_map dump from volatility
-	
 	[address] = getBss(lstList, path, instance)
 	[memList.update({(key.strip(":")):value}) for key, value in listing.items() if key.startswith("mem")]	
 	[mapList.update({(key.strip(":")):value}) for key, value in listing.items() if key.startswith("map")]
-	
 	[runtime, nPath, rAddr] = runtimeObj(address, memList)
 	return[nPath, rAddr, memList, mapList,listing, lstList, runtime]
 
@@ -216,8 +213,8 @@ def getNames(strPointer, memList): # Reading std::string
 	[sPath, sOff] = getOffset(strPointer, memList)
 	with open(sPath, 'rb') as f:
 		f.seek(sOff+4)
-		size = unpack_dec(f.read(4))[0]
-		dPointer = hex(unpack_int(f.read(4))[0])
+		size = unpack_addr(f)
+		dPointer = hex(unpack_addr(f))
 		[dPath, dOff] = getOffset(dPointer, memList)
 		dPointer = readString(dPath, dOff, size)
 		f.close()
@@ -243,7 +240,7 @@ def getHeap(nPath, rAddr):
 	heapOff = rAddr + index
 	f = open(nPath, 'rb')
 	f.seek(heapOff)
-	heapAddr = hex(unpack_int(f.read(4))[0])
+	heapAddr = hex(unpack_addr(f))
 	f.close()
 	return heapAddr
 	
