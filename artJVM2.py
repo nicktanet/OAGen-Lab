@@ -280,9 +280,11 @@ def getClsObj(ref, refFile, refOff, fDict, addr, off):
 			fields = fld.getFields(ifields_, mapList)
 			for key, values in fields.items():
 				fieldIdx = values[2]
-				cl,type ,name1 = dx.getMeta(dexCache,fieldIdx,mapList, memList)			
-				#print "FieldName - "+name+ " - "+type+" offset "+str(values[3])
+				cl, type , name1 = dx.getMeta(dexCache, fieldIdx, mapList, memList)			
+				print ("FieldName - " + name + " - " + type + " offset " + str(values[3]))
+				
 				fDict[values[3]] = [name1,type]
+				
 		if (classFlag=="kClassFlagClass"):
 			ret.append("Is ClassClass "+name)
 			[buf,objSize, sFields, dexCache] = fld.getValueClass(fDict, addr, off)

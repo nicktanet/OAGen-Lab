@@ -8,7 +8,7 @@ import networkx as nx
 from utils import *
 import procFiles as proc
 reload(sys)
-sys.setdefaultencoding('utf8')
+sys.setdefaultencoding('UTF8')
 
 #import os
 #os.environ["PATH"] += os.pathsep + '/home/nicholastanet/.local/lib/python2.7/site-packages/graphviz'
@@ -17,10 +17,31 @@ sys.setdefaultencoding('utf8')
 # pygraphiz mac installation - pip install  --install-option="--include-path=/usr/local/Cellar/graphviz/2.42.3/include/" --install-option="--library-path=/usr/local/Cellar/graphviz/2.42.3/lib/" pygraphviz
 # graphviz mac installation - brew install networkx
 
+
+def decodeObject(bitmap_size_, heapBegin_, node):
+	ret = hp.getObject(node, jvm2, lstList, mapList, bitmap_size_, heapBegin_)
+	ret = '\n'.join(ret)
+	ret = str(ret)
+	node = str(node)
+	#print ("\nret: \n" + ret + "\n\n")
+	#print ("\nnode: \n" + node + "\n\n")
+	
+	ret = str("@ Address " + "\n" + node + ret)
+	return ret
+	#return "@ Address " +"\n" + node + '\n'.join(ret)
+
 def recurseDecode(G, node):
 	#try:
 		rootNode = node.attr['id']	
-		decoded = str(decodeObject(bitmap_size_, heapBegin_, rootNode)).decode('utf8').strip()[1:-1]
+		#breaks right here for UTF8 problem
+		decoded = decodeObject(bitmap_size_, heapBegin_, rootNode)#.encode('UTF8')[1:-1]
+		
+		print ("\n")
+		for i in range(0, 290):
+			sys.stdout.write(decoded[i])
+		print ("\n\n")
+
+		decoded = decoded.encode('UTF8')[1:-1]
 		if 'The data for java.lang.String' in decoded:
 			slice = filter(lambda x: x != "", decoded.split("The data for java.lang.String is"))[1]
 			splitted = [repr(i) for i in slice.split()]
@@ -164,11 +185,6 @@ def getGraph(G, fName, roots):
 			if counter>depth:
 				break
 	G.write(fName)#
-	
-def decodeObject(bitmap_size_, heapBegin_, node):
-	ret = hp.getObject(node, jvm2, lstList, mapList, bitmap_size_, heapBegin_)
-	return "@ Address " +"\n" + node + '\n'.join(ret)
-	
 
 def help():
 	print ("Usage: pypy artFlowGraph Command [File/Path] [Options]\n") 
@@ -196,7 +212,7 @@ def getGCRoot(heapDump):
 	gcroot =[]
 	for line in g.readlines():
 		if line.startswith('Address'):
-			print (line)
+			#print (line)
 			gcroot.append(str(line.split(' ')[1]).rstrip("L"))
 	g.close()
 	return gcroot
@@ -227,10 +243,13 @@ def usage():
 			[nPath, rAddr, memList, mapList, listing, lstList, runtime, th, hp, bitmap_size_, heapBegin_] = getGlobs(dir)
 			heapDump=sys.argv[3]
 			roots =  getGCRoot(heapDump)
-			print (roots)
+			#print (roots)
+			
 			gFile = sys.argv[4]
 			depth=0
+			
 			G=AGraph(strict=False,directed=True)
+			
 			getGraph(G, gFile, roots)
 			print (G.order())
 			print (len(G.edges()))

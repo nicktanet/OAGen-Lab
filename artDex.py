@@ -52,7 +52,7 @@ def getIds(g, offset):
 	g.seek(offset+begin)
 	beginOff = hex(unpack_addr(g))
 	#fieldId = getIdx(fieldIds, fieldIdx, dexFile, memList)	
-	return [beginOff,sIdsOff, fIdsOff,mIdsOff,tIdsOff]
+	return [beginOff,sIdsOff, fIdsOff, mIdsOff, tIdsOff]
 	
 def getFieldIdx(fIdsOff, dex_field_index_,mapList):
 	[g, offset]= art.fromPointer(fIdsOff, mapList)
@@ -72,7 +72,7 @@ def getFieldIdx(fIdsOff, dex_field_index_,mapList):
 
 def uleb128_decode(dataIndex, g):
 	g.seek(dataIndex)
-	result = unpack_b(g)
+	result = unpack_b(g) # unpack byte
 	if (result > 0x7f):
 		cur = unpack_b(g)
 		result = (result & 0x7f) | ((cur & 0x7f) << 7);
@@ -90,12 +90,13 @@ def uleb128_decode(dataIndex, g):
 	g.close()
 	return data
 	
-def getName(sIdsOff,mapList, nameIdx, beginOff):
+def getName(sIdsOff, mapList, nameIdx, beginOff):
 	[strHandle, strIdxOdd]= art.fromPointer(sIdsOff, mapList)	
 	strHandle.seek(strIdxOdd+4*nameIdx)
 	strDataItemOff =  unpack_int(strHandle)
 	[bHandle, bOdd]= art.fromPointer(beginOff, mapList)
 	strHandle.close()
+	#print("bOdd: " + str(bOdd) + " |strDataItemOff: " + str(strDataItemOff))
 	return uleb128_decode(bOdd+strDataItemOff, bHandle)
 	
 def getType(tIdsOff,mapList,typeIdx, beginOff, sIdsOff, clsIdx):
@@ -113,12 +114,16 @@ def getType(tIdsOff,mapList,typeIdx, beginOff, sIdsOff, clsIdx):
 def getMeta(dexCache,dex_field_index_,mapList, memList):
 	dexFile = getDex(dexCache, mapList)
 	[dexHandle, dexOffset]= art.fromPointer(dexFile, memList)		
-	[beginOff, sIdsOff,fIdsOff,mIdsOff,tIdsOff] = getIds(dexHandle,dexOffset)	
+	[beginOff, sIdsOff,fIdsOff, mIdsOff, tIdsOff] = getIds(dexHandle,dexOffset)	
 	dexHandle.close()
 	[clsIdx,typeIdx,nameIdx] = getFieldIdx(fIdsOff, dex_field_index_,mapList)
-	name = getName(sIdsOff,mapList, nameIdx, beginOff)
+	name = getName(sIdsOff, mapList, nameIdx, beginOff)
+	
+	#hexname = ":".join("{:02x}".format(ord(c)) for c in name)
+	#print ("\n TEST " + hexname + " TEST \n")
+ 
 	[type, cls] = getType(tIdsOff,mapList,typeIdx, beginOff, sIdsOff,clsIdx)
-	return [cls,type ,name]
+	return [cls, type ,name]
 	
 '''	
 def getFieldTypeId(fieldId)
