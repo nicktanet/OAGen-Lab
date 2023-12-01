@@ -238,10 +238,11 @@ def getSuperClass(super_class_,fDict, ret):
 			fields = fld.getFields(ifields_, mapList)
 			for key, values in fields.items():
 				fieldIdx = values[2]
-				cl,type ,name = dx.getMeta(dexCache,fieldIdx,mapList, memList)
-				fDict[values[3]] = [name,type]			
-				#print "FieldName - "+name+ " - "+type+" offset "+str(values[3])	
-			
+				cl,type ,name1 = dx.getMeta(dexCache,fieldIdx,mapList, memList)				
+				print ("Super Class FieldName - "+ name + " - " + type + " offset "+str(values[3]))	
+
+				fDict[values[3]] = [name1,type]
+    
 def getClsObj(ref, refFile, refOff, fDict, addr, off):
 	ret=[]
 	[name, classFlag, primType, ifields_,methods_, sfields_, dexCache, objSize, refSize, super_class_] =  cls.getClassMembers(ref, refFile, refOff, mapList)
@@ -281,7 +282,7 @@ def getClsObj(ref, refFile, refOff, fDict, addr, off):
 			for key, values in fields.items():
 				fieldIdx = values[2]
 				cl, type , name1 = dx.getMeta(dexCache, fieldIdx, mapList, memList)			
-				print ("FieldName - " + name + " - " + type + " offset " + str(values[3]))
+				print ("Cls Obj FieldName - " + name + " - " + type + " offset " + str(values[3]))
 				
 				fDict[values[3]] = [name1,type]
 				

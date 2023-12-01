@@ -26,7 +26,7 @@ def decodeObject(bitmap_size_, heapBegin_, node):
 	#print ("\nret: \n" + ret + "\n\n")
 	#print ("\nnode: \n" + node + "\n\n")
 	
-	ret = str("@ Address " + "\n" + node + ret)
+	ret = str("@ Address " + node + "\n" + ret)
 	return ret
 	#return "@ Address " +"\n" + node + '\n'.join(ret)
 
@@ -249,8 +249,9 @@ def usage():
 			depth=0
 			
 			G=AGraph(strict=False,directed=True)
-			
+
 			getGraph(G, gFile, roots)
+
 			print (G.order())
 			print (len(G.edges()))
 		elif (sys.argv[1]=="Strings" and os.path.isfile(sys.argv[2])):

@@ -17,14 +17,14 @@ lstList=""
 kAlignment =8
 kBitsPerIntPtrT = 4*8
 
-unpack_int = struct.Struct('<I').unpack
-unpack_dec = struct.Struct('<i').unpack
-unpack_b = struct.Struct('<B').unpack #Byte or Bool
-unpack_char = struct.Struct('<c').unpack
-unpack_short = struct.Struct('<H').unpack
-unpack_float = struct.Struct('<f').unpack
-unpack_long = struct.Struct('<Q').unpack
-unpack_double = struct.Struct('<d').unpack
+#unpack_int = struct.Struct('<I').unpack
+#unpack_dec = struct.Struct('<i').unpack
+#unpack_b = struct.Struct('<B').unpack #Byte or Bool
+#unpack_char = struct.Struct('<c').unpack
+#unpack_short = struct.Struct('<H').unpack
+#unpack_float = struct.Struct('<f').unpack
+#unpack_long = struct.Struct('<Q').unpack
+#unpack_double = struct.Struct('<d').unpack
 
 
 def OffsetToIndex(offset):
@@ -223,7 +223,7 @@ def getNames(strPointer, memList): # Reading std::string
 def getStringClass(strOff, i):
 	prettyName=''
 	i.seek(strOff+8)
-	count = unpack_dec(i.read(4))[0]
+	count = unpack_int(i)           #(i.read(4))[0]
 	len = count >> 1
 	if (len >0):
 		i.seek(i.tell()+4)
@@ -257,10 +257,10 @@ def getRefs(table_begin, segment_state):
 	[f, refOff] = fromPointer(table_begin, mapList)
 	counter =0
 	while (counter < segment_state):
-		serial = unpack_dec(f.read(4))[0]
+		serial = unpack_int(f)           #(f.read(4))[0]
 		refOff = f.tell()
 		f.seek(refOff + serial*4)
-		reference = hex(unpack_int(f.read(4))[0])
+		reference = hex(unpack_addr(f))      #(f.read(4))[0]) changed but may be addr or uint
 		if(int(reference, 16)>0):
 			refs.append(reference)
 		counter+=1;

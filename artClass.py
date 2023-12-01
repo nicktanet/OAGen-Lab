@@ -34,6 +34,7 @@ def getOKlass(reference, mapList):
 def resolveName(klass, mapList):
 	name ='Cannot Be Resolved'
 	nameOff = getNamePointer(klass, mapList)
+	#print("\n\nname: " + name + "\nnameOff: " + nameOff + "\n\n")
 	if (int(nameOff, 16)> 0):
 		[i, strOff] = art.fromPointer(nameOff, mapList)
 		if i == None:
@@ -148,7 +149,7 @@ def getClassMembers(reference, g, objOff, mapList):
 		dexCache = getClsDexCache(g, objOff)	
 		ifields_ = getIfields(g, objOff, 'ifields_')
 		sfields_ = getIfields(g, objOff, 'sfields_')
-		methods_=getClsMethod(g, objOff)
+		methods_ = getClsMethod(g, objOff)
 		#classFlag = getClsFlag(g, objOff)
 		#primType = getType(g, objOff)
 		super_class_ = 	getSuperClass(g, objOff)
