@@ -62,7 +62,7 @@ def getValue(fDict, tlab, offset):
 		tlab.seek(offset+key)
 		name = value[0]
 		type_ = value[1]
-		ret.append( "FieldName - "+name+ " - "+type_+" offset "+str(key))
+		ret.append( "get value FieldName - " + name + " - " + type_ + " offset " + str(key))
 		if (len(type_)==1):
 			addr = getPrimitive(type_, tlab)
 		else:

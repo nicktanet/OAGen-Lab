@@ -96,18 +96,23 @@ def getName(sIdsOff, mapList, nameIdx, beginOff):
 	strDataItemOff =  unpack_int(strHandle)
 	[bHandle, bOdd]= art.fromPointer(beginOff, mapList)
 	strHandle.close()
+	
 	#print("bOdd: " + str(bOdd) + " |strDataItemOff: " + str(strDataItemOff))
-	return uleb128_decode(bOdd+strDataItemOff, bHandle)
+	test = uleb128_decode(bOdd+strDataItemOff, bHandle)
+	#test = (str(test))
+	test = (":".join("{:02x}".format(ord(c)) for c in (str(test))))
+	return test
 	
 def getType(tIdsOff,mapList,typeIdx, beginOff, sIdsOff, clsIdx):
 	[tHandle, tIdxOdd]= art.fromPointer(tIdsOff, mapList)	
 	tHandle.seek(tIdxOdd+(4*typeIdx))
-	descIdx_T =  unpack_int(tHandle)
+	descIdx_T =  unpack_uint(tHandle)
 	type = getName(sIdsOff,mapList, descIdx_T, beginOff)
 	tHandle.seek(tIdxOdd+(4*clsIdx))
-	descIdx_C =  unpack_int(tHandle)
+	descIdx_C =  unpack_uint(tHandle)
 	cls = getName(sIdsOff,mapList, descIdx_C, beginOff)
 	tHandle.close()
+	print("\n\ncls: " + cls + "\n\n")
 	return [type, cls]
 	
     
@@ -118,10 +123,6 @@ def getMeta(dexCache,dex_field_index_,mapList, memList):
 	dexHandle.close()
 	[clsIdx,typeIdx,nameIdx] = getFieldIdx(fIdsOff, dex_field_index_,mapList)
 	name = getName(sIdsOff, mapList, nameIdx, beginOff)
-	
-	#hexname = ":".join("{:02x}".format(ord(c)) for c in name)
-	#print ("\n TEST " + hexname + " TEST \n")
- 
 	[type, cls] = getType(tIdsOff,mapList,typeIdx, beginOff, sIdsOff,clsIdx)
 	return [cls, type ,name]
 	
