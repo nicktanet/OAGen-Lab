@@ -38,7 +38,7 @@ OAGen utilizes Points-to analysis to reconstruct an Android Runtime (ART) object
 
 ---
 
-## 🛠️ Execution & Processing Matrix
+## Execution & Processing Matrix
 
 ### OAG Graph Generation
 To generate a comprehensive object allocation graph for a specific memory target image, execute the following runtime string:
